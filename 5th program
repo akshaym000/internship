@@ -1,0 +1,449 @@
+```text id="full2nd001"
+==================================================
+EXPERIMENT 2
+Creating and Configuring a Jenkins CI/CD Workflow
+to Build a Python Docker Application and Push
+the Image to Docker Hub
+==================================================
+
+
+==================================================
+STEP 1 — CONFIGURE GIT
+==================================================
+
+git config --global user.name "akshaym000"
+
+git config --global user.email "YOUR_EMAIL@gmail.com"
+
+git config --list
+
+
+==================================================
+STEP 2 — CREATE GITHUB REPOSITORY
+==================================================
+
+Create a GitHub repository named:
+
+jenkins-docker
+
+Repository should contain:
+
+Dockerfile
+Jenkinsfile
+app.py
+requirements.txt
+
+
+==================================================
+STEP 3 — CREATE app.py
+==================================================
+
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "Hello! Docker is running this Python app successfully :)"
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
+
+
+==================================================
+STEP 4 — CREATE requirements.txt
+==================================================
+
+flask
+
+
+==================================================
+STEP 5 — CREATE Dockerfile
+==================================================
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY app.py .
+
+EXPOSE 5000
+
+CMD ["python", "app.py"]
+
+
+==================================================
+STEP 6 — CREATE Jenkinsfile
+==================================================
+
+pipeline {
+    agent any
+
+    environment {
+        IMAGE = "akshaym000/my-python-app:latest"
+    }
+
+    stages {
+
+        stage('Build') {
+            steps {
+                sh 'docker build -t $IMAGE .'
+            }
+        }
+
+        stage('Login') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-credentials',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
+                    sh 'echo $PASS | docker login -u $USER --password-stdin'
+                }
+            }
+        }
+
+        stage('Push') {
+            steps {
+                sh 'docker push $IMAGE'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                docker rm -f myapp-container || true
+                docker run -d -p 5000:5000 --name myapp-container $IMAGE
+                '''
+            }
+        }
+    }
+}
+
+
+==================================================
+STEP 7 — CLONE REPOSITORY
+==================================================
+
+git clone https://github.com/akshaym000/jenkins-docker.git
+
+cd jenkins-docker
+
+
+==================================================
+STEP 8 — BUILD DOCKER IMAGE
+==================================================
+
+docker build -t my-python-app .
+
+
+Check images:
+
+docker images
+
+
+==================================================
+STEP 9 — TAG DOCKER IMAGE
+==================================================
+
+docker tag my-python-app:latest akshaym000/my-python-app:latest
+
+
+Again check:
+
+docker images
+
+
+==================================================
+STEP 10 — LOGIN TO DOCKER HUB
+==================================================
+
+docker login -u akshaym000
+
+
+Enter:
+- DockerHub password
+OR
+- DockerHub personal access token
+
+
+==================================================
+STEP 11 — PUSH DOCKER IMAGE
+==================================================
+
+docker push akshaym000/my-python-app:latest
+
+
+==================================================
+STEP 12 — INSTALL JAVA
+==================================================
+
+sudo apt update
+
+sudo apt install openjdk-17-jdk -y
+
+
+Check Java:
+
+java --version
+
+
+==================================================
+STEP 13 — DOWNLOAD JENKINS WAR
+==================================================
+
+rm -rf ~/.jenkins
+
+rm -f jenkins.war
+
+wget https://get.jenkins.io/war-stable/latest/jenkins.war
+
+
+==================================================
+STEP 14 — START JENKINS
+==================================================
+
+java -jar jenkins.war --httpPort=8080
+
+
+Open browser:
+
+http://localhost:8080
+
+
+If using VirtualBox VM:
+
+ip addr
+
+Open:
+
+http://YOUR_VM_IP:8080
+
+
+==================================================
+STEP 15 — GET ADMIN PASSWORD
+==================================================
+
+Terminal will show:
+
+Please use the following password to proceed to installation
+
+
+OR use:
+
+cat ~/.jenkins/secrets/initialAdminPassword
+
+
+==================================================
+STEP 16 — INSTALL PLUGINS
+==================================================
+
+Click:
+
+Install Suggested Plugins
+
+
+==================================================
+STEP 17 — CREATE ADMIN USER
+==================================================
+
+Fill:
+- username
+- password
+- email
+
+Click:
+
+Save and Continue
+
+Then:
+
+Start using Jenkins
+
+
+==================================================
+STEP 18 — INSTALL DOCKER PIPELINE PLUGIN
+==================================================
+
+Go to:
+
+Manage Jenkins
+→ Plugins
+→ Available Plugins
+
+Search:
+
+Docker Pipeline
+
+Install plugin.
+
+
+==================================================
+STEP 19 — ADD DOCKERHUB CREDENTIALS
+==================================================
+
+Go to:
+
+Manage Jenkins
+→ Credentials
+→ System
+→ Global credentials
+
+Click:
+
+Add Credentials
+
+Select:
+
+Username with password
+
+
+Fill:
+
+Username = akshaym000
+
+Password = DockerHub password/token
+
+ID = dockerhub-credentials
+
+
+Click:
+
+Create
+
+
+==================================================
+STEP 20 — CREATE PIPELINE JOB
+==================================================
+
+Dashboard:
+
+New Item
+
+Job name:
+
+Docker
+
+Select:
+
+Pipeline
+
+Click:
+
+OK
+
+
+==================================================
+STEP 21 — CONFIGURE PIPELINE
+==================================================
+
+Select:
+
+Pipeline script from SCM
+
+SCM:
+
+Git
+
+Repository URL:
+
+https://github.com/akshaym000/jenkins-docker.git
+
+
+Branch:
+
+main
+
+
+Script Path:
+
+Jenkinsfile
+
+
+Click:
+
+Save
+
+
+==================================================
+STEP 22 — GIVE JENKINS DOCKER ACCESS
+==================================================
+
+sudo chmod 666 /var/run/docker.sock
+
+
+==================================================
+STEP 23 — BUILD PIPELINE
+==================================================
+
+Open pipeline job:
+
+Docker
+
+Click:
+
+Build Now
+
+
+==================================================
+STEP 24 — CHECK BUILD OUTPUT
+==================================================
+
+Click build number
+
+Example:
+
+#1
+
+Then click:
+
+Console Output
+
+
+==================================================
+EXPECTED RESULT
+==================================================
+
+Jenkins automatically:
+
+1. Pulls code from GitHub
+2. Builds Docker image
+3. Logs into DockerHub
+4. Pushes Docker image
+5. Deploys Docker container
+
+
+==================================================
+CHECK RUNNING CONTAINER
+==================================================
+
+docker ps
+
+
+You should see:
+
+myapp-container
+
+
+==================================================
+OPEN APPLICATION
+==================================================
+
+http://localhost:5000
+
+
+OR
+
+http://YOUR_VM_IP:5000
+
+
+==================================================
+OUTPUT
+==================================================
+
+Hello! Docker is running this Python app successfully :)
+```
