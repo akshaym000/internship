@@ -1,0 +1,106 @@
+5TH PROGRAM – Docker + GitHub + Jenkins Setup
+================================================
+
+STEP 1: Create Project Folder
+-----------------------------
+mkdir my-python-app
+cd my-python-app
+
+STEP 2: Create Required Files
+-----------------------------
+nano app.py
+nano Dockerfile
+nano requirements.txt
+
+STEP 3: Initialize Git Repository
+---------------------------------
+git init
+
+STEP 4: Configure Git Username and Email
+----------------------------------------
+git config --global user.name "your_username"
+git config --global user.email "your_email@gmail.com"
+
+Example:
+git config --global user.name "akshay"
+git config --global user.email "akshay@gmail.com"
+
+STEP 5: Add and Commit Files
+----------------------------
+git add .
+git commit -m "initial commit"
+
+STEP 6: Install Java (for Jenkins)
+----------------------------------
+sudo apt install openjdk-21-jdk
+
+Check Java version:
+java -version
+
+STEP 7: Push Code to GitHub
+---------------------------
+Create a repository in GitHub named:
+my-python-app
+
+Push commands:
+git remote add origin https://github.com/your-username/my-python-app.git
+git branch -M main
+git push -u origin main
+
+STEP 8: Build Docker Image
+--------------------------
+sudo docker build -t my-python-app .
+
+Tag the image:
+docker tag my-python-app:latest your-dockerhub-username/my-python-app:latest
+
+Check Docker images:
+docker images
+
+STEP 9: Run Docker Container
+----------------------------
+sudo docker run -d -p 5000:5000 --name mypython-app-container your-dockerhub-username/my-python-app:latest
+
+Check running containers:
+docker ps
+
+Login to DockerHub:
+docker login -u your-dockerhub-username
+
+Push image to DockerHub:
+sudo docker push your-dockerhub-username/my-python-app:latest
+
+STEP 10: Install Jenkins
+------------------------
+sudo apt update
+
+Add Jenkins repository key:
+wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
+
+Add Jenkins repository:
+sudo sh -c 'echo deb https://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+
+Install Jenkins:
+sudo apt update
+sudo apt install jenkins -y
+
+STEP 11: Start Jenkins
+----------------------
+sudo systemctl start jenkins
+sudo systemctl enable jenkins
+
+STEP 12: Open Jenkins
+---------------------
+Open browser and use:
+http://localhost:8080
+
+Useful Commands
+---------------
+Check Docker containers:
+docker ps
+
+Check Docker images:
+docker images
+
+Check Jenkins status:
+sudo systemctl status jenkins
