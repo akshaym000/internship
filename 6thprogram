@@ -1,0 +1,201 @@
+6th Program — Maven CI/CD Pipeline with Jenkins
+
+AIM:
+Create and build a Maven Java project using Jenkins Pipeline.
+
+STEP 1 — Update Ubuntu
+sudo apt update
+
+STEP 2 — Install Maven
+sudo apt install maven -y
+
+STEP 3 — Create GitHub Repository
+Create repository in GitHub:
+Repository Name: sixth
+
+STEP 4 — Clone Repository
+git clone https://github.com/YOUR_USERNAME/sixth.git
+
+STEP 5 — Enter Repository Folder
+cd sixth
+
+STEP 6 — Generate Maven Project
+mvn archetype:generate -DgroupId=com.example.app -DartifactId=. -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+
+STEP 7 — Open pom.xml
+nano pom.xml
+
+Replace with:
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example.app</groupId>
+    <artifactId>demo-app</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
+
+STEP 8 — Edit App.java
+nano src/main/java/com/example/app/App.java
+
+package com.example.app;
+
+public class App {
+
+    public static void main(String[] args) {
+
+        System.out.println("Hello Maven Jenkins CI/CD");
+    }
+}
+
+STEP 9 — Edit AppTest.java
+nano src/test/java/com/example/app/AppTest.java
+
+package com.example.app;
+
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+
+public class AppTest {
+
+    @Test
+    public void testApp() {
+
+        assertEquals(1, 1);
+    }
+}
+
+STEP 10 — Build Project
+mvn clean install
+
+Expected Output:
+BUILD SUCCESS
+
+STEP 11 — Create Jenkinsfile
+nano Jenkinsfile
+
+pipeline {
+
+    agent any
+
+    tools {
+        maven 'Maven'
+        jdk 'JDK21'
+    }
+
+    stages {
+
+        stage('Checkout') {
+
+            steps {
+
+                git branch: 'main',
+                    url: 'https://github.com/YOUR_USERNAME/sixth.git'
+            }
+        }
+
+        stage('Build') {
+
+            steps {
+
+                sh 'mvn clean compile'
+            }
+        }
+
+        stage('Test') {
+
+            steps {
+
+                sh 'mvn test'
+            }
+        }
+
+        stage('Package') {
+
+            steps {
+
+                sh 'mvn package'
+            }
+        }
+    }
+}
+
+STEP 12 — Push Files
+git add .
+git commit -m "Initial commit"
+git push origin main
+
+STEP 13 — Install Java
+sudo apt install openjdk-21-jdk -y
+
+STEP 14 — Download Jenkins
+wget https://get.jenkins.io/war-stable/latest/jenkins.war
+
+STEP 15 — Start Jenkins
+java -jar jenkins.war --httpPort=8090
+
+STEP 16 — Open Jenkins
+http://localhost:8090
+
+Install Suggested Plugins.
+
+STEP 17 — Configure Tools
+Manage Jenkins → Tools
+
+Add:
+JDK Name: JDK21
+Maven Name: Maven
+
+STEP 18 — Create Pipeline
+New Item → Pipeline
+
+Definition:
+Pipeline script from SCM
+
+SCM:
+Git
+
+Repository URL:
+https://github.com/YOUR_USERNAME/sixth.git
+
+Branch:
+*/main
+
+STEP 19 — Build Now
+
+Expected:
+Finished: SUCCESS
