@@ -1,0 +1,257 @@
+7th Program — Jenkins Email Notification with Maven CI/CD
+
+AIM:
+Integrate Jenkins with Gmail and send automatic email notifications for build success/failure.
+
+STEP 1 — Create GitHub Repository
+Repository Name:
+sixth
+
+STEP 2 — Clone Repository
+git clone https://github.com/YOUR_USERNAME/sixth.git
+
+STEP 3 — Enter Repository Folder
+cd sixth
+
+STEP 4 — Generate Maven Project
+mvn archetype:generate -DgroupId=com.example.app -DartifactId=. -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+
+STEP 5 — Edit pom.xml
+nano pom.xml
+
+Paste complete pom.xml with:
+- junit dependency
+- slf4j dependency
+- commons-lang3 dependency
+- compiler plugin
+- surefire plugin
+- exec plugin
+
+STEP 6 — Edit App.java
+nano src/main/java/com/example/app/App.java
+
+package com.example.app;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.StringUtils;
+
+public class App {
+
+    private static final Logger logger =
+            LoggerFactory.getLogger(App.class);
+
+    public static void main(String[] args) {
+
+        String name = "CI/CD Pipeline";
+
+        if (StringUtils.isNotBlank(name)) {
+
+            String message = greet(name);
+
+            logger.info(message);
+
+            System.out.println(message);
+
+        } else {
+
+            logger.error("Name is empty!");
+        }
+    }
+
+    public static String greet(String name) {
+
+        return "Hello " + name +
+                ", Welcome to Maven CI/CD Demo.";
+    }
+}
+
+STEP 7 — Edit AppTest.java
+nano src/test/java/com/example/app/AppTest.java
+
+package com.example.app;
+
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+
+public class AppTest {
+
+    @Test
+    public void testGreet() {
+
+        String result = App.greet("Student");
+
+        assertEquals(
+                "Hello Student, Welcome to Maven CI/CD Demo.",
+                result
+        );
+    }
+}
+
+STEP 8 — Test Maven Project
+mvn clean install
+
+Expected:
+BUILD SUCCESS
+
+STEP 9 — Create Jenkinsfile
+nano Jenkinsfile
+
+pipeline {
+
+    agent any
+
+    tools {
+        maven 'Maven'
+        jdk 'JDK21'
+    }
+
+    stages {
+
+        stage('Checkout') {
+
+            steps {
+
+                git branch: 'main',
+                    url: 'https://github.com/YOUR_USERNAME/sixth.git'
+            }
+        }
+
+        stage('Build') {
+
+            steps {
+
+                sh 'mvn clean compile'
+            }
+        }
+
+        stage('Test') {
+
+            steps {
+
+                sh 'mvn test'
+            }
+        }
+
+        stage('Package') {
+
+            steps {
+
+                sh 'mvn package'
+            }
+        }
+    }
+
+    post {
+
+        success {
+
+            emailext(
+                subject: "SUCCESS : ${JOB_NAME} #${BUILD_NUMBER}",
+                body: "Build succeeded!\nCheck: ${BUILD_URL}",
+                to: "your-gmail@gmail.com"
+            )
+        }
+
+        failure {
+
+            emailext(
+                subject: "FAILED : ${JOB_NAME} #${BUILD_NUMBER}",
+                body: "Build failed!\nCheck: ${BUILD_URL}",
+                to: "your-gmail@gmail.com"
+            )
+        }
+    }
+}
+
+STEP 10 — Push Files
+git add .
+git commit -m "Added Jenkins pipeline"
+git push origin main
+
+STEP 11 — Install Java
+sudo apt install openjdk-21-jdk -y
+
+STEP 12 — Download Jenkins
+wget https://get.jenkins.io/war-stable/latest/jenkins.war
+
+STEP 13 — Start Jenkins
+java -jar jenkins.war --httpPort=8090
+
+STEP 14 — Open Jenkins
+http://localhost:8090
+
+Install Suggested Plugins.
+
+STEP 15 — Configure Tools
+Manage Jenkins → Tools
+
+Add:
+JDK Name: JDK21
+Maven Name: Maven
+
+STEP 16 — Configure Gmail
+Google Account → Security
+
+Enable:
+2-Step Verification
+
+Then open:
+App Passwords
+
+Create App Password for:
+Jenkins
+
+Copy 16-digit password.
+
+STEP 17 — Configure Email in Jenkins
+Manage Jenkins → System
+
+Extended E-mail Notification
+
+SMTP Server:
+smtp.gmail.com
+
+SMTP Port:
+587
+
+Advanced:
+Enable:
+- Use SMTP Authentication
+- Use TLS
+
+Username:
+your-gmail@gmail.com
+
+Password:
+Gmail App Password
+
+Default Recipients:
+your-gmail@gmail.com
+
+Save.
+
+STEP 18 — Create Jenkins Pipeline
+New Item → Pipeline
+
+Definition:
+Pipeline script from SCM
+
+SCM:
+Git
+
+Repository URL:
+https://github.com/YOUR_USERNAME/sixth.git
+
+Branch:
+*/main
+
+STEP 19 — Build Now
+
+Expected Output:
+- Jenkins clones repo
+- Maven builds project
+- Tests execute
+- Success email sent automatically
+- Finished: SUCCESS
